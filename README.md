@@ -2,6 +2,12 @@
 
 This is a personal project with the goal of enhancing the user experience and performance to meet my specific needs.
 
+### Installing `tesserocr` on Windows
+Installing `tesserocr` using `pip` requires the wheel file to be downloaded from [simonflueckiger/tesserocr-windows_build/releases](https://github.com/simonflueckiger/tesserocr-windows_build/releases).
+```
+pip install <package_name>.whl
+```
+
 ## ScoreSight - Real-time OCR For Scoreboards, Apps, Games and more
 
 <div align="center">
