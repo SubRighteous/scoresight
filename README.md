@@ -1,4 +1,6 @@
-# ⚠️ Stalled ⚠️ This project is not under active development
+# This is a independent fork of [royshil/scoresight](https://github.com/royshil/scoresight) and is not affiliated with the original Scoresight project
+
+This is a personal project with the goal of enhancing the user experience and performance to meet my specific needs.
 
 ## ScoreSight - Real-time OCR For Scoreboards, Apps, Games and more
 
