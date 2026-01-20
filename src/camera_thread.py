@@ -39,7 +39,7 @@ def set_camera_highest_resolution(cap):
     # grab one frame to make sure the camera is initialized
     ret, _ = cap.read()
     if not ret:
-        logger.warn("Error: camera not initialized")
+        logger.warning("Error: camera not initialized")
         return
 
     # grab the current resolution
