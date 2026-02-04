@@ -19,19 +19,19 @@ jobs:
         os: [ubuntu-latest, macos-x86, macos-arm64, windows-latest]
         include:
           - os: macos-x86
-            python-version: '3.11'
+            python-version: '3.14'
             target: macos-x86
             runs-on: macos-13
           - os: macos-arm64
-            python-version: '3.11'
+            python-version: '3.14'
             target: macos-arm64
             runs-on: macos-latest
           - os: ubuntu-latest
-            python-version: '3.11'
+            python-version: '3.14'
             target: linux
             runs-on: ubuntu-latest
           - os: windows-latest
-            python-version: '3.11'
+            python-version: '3.14'
             target: windows
             runs-on: windows-latest
 
@@ -48,8 +48,8 @@ jobs:
       - name: Install tesserocr for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          Invoke-WebRequest -Uri https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.7.0-tesseract-5.3.4/tesserocr-2.7.0-cp311-cp311-win_amd64.whl -OutFile tesserocr-2.7.0-cp311-cp311-win_amd64.whl
-          python -m pip install tesserocr-2.7.0-cp311-cp311-win_amd64.whl
+          Invoke-WebRequest -Uri https://github.com/simonflueckiger/tesserocr-windows_build/releases/download/tesserocr-v2.9.1-tesseract-5.5.1/tesserocr-2.9.1-cp314-cp314-win_amd64.whl -OutFile tesserocr-2.9.1-cp314-cp314-win_amd64.whl
+          python -m pip install tesserocr-2.9.1-cp314-cp314-win_amd64.whl
 
       - name: Install tesserocr for MacOS arm64
         if: matrix.os == 'macos-arm64'
@@ -60,13 +60,13 @@ jobs:
       - name: Install pyinstaller for Windows
         if: matrix.os == 'windows-latest'
         run: |
-          Invoke-WebRequest -Uri https://github.com/pyinstaller/pyinstaller/archive/refs/tags/v6.8.0.zip -OutFile pyinstaller-6.8.0.zip
-          Expand-Archive -Path pyinstaller-6.8.0.zip -DestinationPath .
-          cd pyinstaller-6.8.0
+          Invoke-WebRequest -Uri https://github.com/pyinstaller/pyinstaller/archive/refs/tags/v6.18.0.zip -OutFile pyinstaller-6.18.0.zip
+          Expand-Archive -Path pyinstaller-6.18.0.zip -DestinationPath .
+          cd pyinstaller-6.18.0
           python -m pip install .
           cd ..
-          Remove-Item -Recurse -Force pyinstaller-6.8.0
-          Remove-Item -Force pyinstaller-6.8.0.zip
+          Remove-Item -Recurse -Force pyinstaller-6.18.0
+          Remove-Item -Force pyinstaller-6.18.0.zip
 
       - name: Install dependencies
         run: |
@@ -112,28 +112,21 @@ jobs:
         run: |
           security find-identity -v -p codesigning
 
-      # write a .env file with the secrets
-      - name: Write .env file Mac & Linux
+      # write a .venv file with the secrets
+      - name: Write .venv file Mac & Linux
         if: matrix.os != 'windows-latest'
         run: |
-          echo "LOCAL_RELEASE_TAG=${GITHUB_REF_NAME}" >> .env
-          echo "LOCAL_RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .env
+          echo "LOCAL_RELEASE_TAG=${GITHUB_REF_NAME}" >> .venv
+          echo "LOCAL_RELEASE_DATE=$(date -u +"%Y-%m-%dT%H:%M:%SZ")" >> .venv
 
-      - name: Write .env file Windows
+      - name: Write .venv file Windows
         if: matrix.os == 'windows-latest'
         run: |
           @"
           LOCAL_RELEASE_TAG=$env:GITHUB_REF_NAME
           LOCAL_RELEASE_DATE=$(Get-Date -Format 'yyyy-MM-ddTHH:mm:ssZ')
-          "@ | Out-File -FilePath .env -Encoding ASCII
+          "@ | Out-File -FilePath .venv -Encoding ASCII
         shell: pwsh
-
-      - name: Build device enumeration module on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          cd src/win32DeviceEnum
-          python setup.py build_ext --inplace
-          cd ../..
 
       - name: Build with PyInstaller (MacOS)
         if: matrix.os == 'macos-x86' || matrix.os == 'macos-arm64'
