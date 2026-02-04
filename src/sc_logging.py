@@ -71,7 +71,7 @@ def setup_logging():
             try:
                 os.remove(os.path.join(data_dir, f))
             except PermissionError as e:
-                logger.error(f"Failed to remove log file: {f}")
+                logger.error(f"(PermissionError) Failed to remove log file: {f}")
 
     return logger, file_handler, log_file_path
 

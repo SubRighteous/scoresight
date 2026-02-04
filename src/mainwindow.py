@@ -34,7 +34,7 @@ from api_output import update_out_api
 from box_settings_ui_handler import BoxSettingsUIHandler
 from camera_info import CameraInfo
 from get_camera_info import get_camera_info
-from http_server import start_http_server, update_http_server
+from http_server import start_http_server, update_http_server, stop_http_server
 from ocr_training_data import OCRTrainingDataDialog
 from resource_path import resource_path
 from screen_capture_source import ScreenCapture
@@ -92,6 +92,7 @@ class MainWindow(QMainWindow):
     # add a signal to update sources
     update_sources = Signal(list)
     get_sources = Signal()
+    config_file_name = None
 
     def __init__(self, translator: QTranslator, parent: QObject):
         super(MainWindow, self).__init__()
@@ -107,21 +108,33 @@ class MainWindow(QMainWindow):
             # set the icon
             self.setWindowIcon(QIcon(resource_path("icons", "Windows-icon-open.ico")))
 
-        self.menubar = self.menuBar()
-        file_menu = self.menubar.addMenu("File")
+        file_menu = self.menuBar().addMenu("File")
+        settings_menu = self.menuBar().addMenu('Settings')
+        help_menu = self.menuBar().addMenu('Help')
 
         # check for updates
-        check_for_updates(False)
-        file_menu.addAction("Check for Updates", lambda: check_for_updates(True))
-        file_menu.addAction("About", self.openAboutDialog)
-        file_menu.addAction("View Current Log", self.openLogsDialog)
-        file_menu.addAction("Import Configuration", self.importConfiguration)
-        file_menu.addAction("Export Configuration", self.exportConfiguration)
+        #check_for_updates(False)
+        help_menu.addAction("View Current Log", self.openLogsDialog)
+        help_menu.addSeparator()
+        #help_menu.addAction("Check for Updates", lambda: check_for_updates(True))
+        help_menu.addAction("About", self.openAboutDialog)
+        
+        file_menu.addAction("New" , self.newConfiguration)
+        file_menu.addSeparator()
+        file_menu.addAction("Open", self.importConfiguration)
         file_menu.addAction("Open Configuration Folder", self.openConfigurationFolder)
-        file_menu.addAction("OCR Training Data Setup", self.openOCRTrainingDataDialog)
-
+        file_menu.addSeparator()
+        file_menu.addAction("Save", self.saveConfiguration)
+        file_menu.addAction("Save As", self.saveConfigurationToFile)
+        file_menu.addSeparator()
+        file_menu.addAction("Exit", QApplication.instance().quit)
+        file_menu.addSeparator()
+        
+        settings_menu.addAction("OCR Training Data Setup", self.openOCRTrainingDataDialog)
+        settings_menu.addSeparator()
+        
         # Add "Language" menu
-        languageMenu = file_menu.addMenu("Language")
+        languageMenu = settings_menu.addMenu("Language")
 
         # Add language options
         self.addLanguageOption(languageMenu, "English (US)", "en_US")
@@ -139,12 +152,12 @@ class MainWindow(QMainWindow):
         self.addLanguageOption(languageMenu, "Chinese (Simplified)", "zh_CN")
 
         # add a menu item to change the theme
-        theme_menu = file_menu.addMenu("Theme")
+        theme_menu = settings_menu.addMenu("Theme")
         for theme in QStyleFactory.keys():
             theme_menu.addAction(theme, lambda theme=theme: self.setStyleTheme(theme))
 
         # Hide the menu bar by default
-        self.menubar.setVisible(True)
+        self.menuBar().setVisible(True)
 
         # Show the menu bar when the Alt key is pressed
         self.installEventFilter(self)
@@ -480,6 +493,12 @@ class MainWindow(QMainWindow):
         if self.image_viewer:
             self.image_viewer.setUpdateOnChange(value)
 
+    def newConfiguration(self):
+        self.detectionTargetsStorage.clear()
+        self.config_file_name = None
+        self.reset_playing_source()
+        self.ui.comboBox_camera_source.setCurrentIndex(0)
+
     def importConfiguration(self):
         # open a file dialog to select a configuration file
         file, _ = QFileDialog.getOpenFileName(
@@ -499,7 +518,13 @@ class MainWindow(QMainWindow):
             )
             return
 
-    def exportConfiguration(self):
+    def saveConfiguration(self):
+        if self.config_file_name is None:
+            self.saveConfigurationToFile()
+        else:
+            self.detectionTargetsStorage.saveBoxesToFile(self.config_file_name)
+
+    def saveConfigurationToFile(self):
         # open a file dialog to select the output file
         file, _ = QFileDialog.getSaveFileName(
             self, "Save Configuration File", "", "Configuration Files (*.json)"
@@ -508,6 +533,7 @@ class MainWindow(QMainWindow):
             return
         # save the configuration to the file
         self.detectionTargetsStorage.saveBoxesToFile(file)
+        self.config_file_name = file
 
     def openOCRTrainingDataDialog(self):
         # open the OCR training data dialog
@@ -1304,4 +1330,5 @@ class MainWindow(QMainWindow):
             # destroy the client object
             self.obs_websocket_client = None
 
+        #stop_http_server()
         super().closeEvent(event)

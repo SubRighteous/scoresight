@@ -234,7 +234,11 @@ class TrainingDojo(QDialog):
         self.save_text()
         start_index = self.current_index
         while True:
-            self.current_index = (self.current_index - 1) % len(self.image_files)
+            if len(self.image_files) != 0:
+                self.current_index = (self.current_index - 1) % len(self.image_files)
+            else:
+                return
+            
             if (
                 not self.show_only_undone
                 or self.image_files[self.current_index] not in self.approved_annotations

@@ -7,7 +7,7 @@ from sc_logging import logger
 
 
 def get_camera_info_windows():
-    from win32DeviceEnum import enum_devices_dshow
+    import enum_devices_dshow
 
     device_info = []
     cameras = enum_devices_dshow.enumerate_video_devices_dshow()

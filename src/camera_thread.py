@@ -6,17 +6,26 @@ import cv2
 from datetime import datetime
 import threading
 
-from base_video_capture import BaseVideoCapture
-from camera_info import CameraInfo
-from ndi import NDICapture
-from screen_capture_source import ScreenCapture, ScreenCaptureType
-from storage import TextDetectionTargetMemoryStorage, subscribe_to_data, fetch_data
-from tesseract import TextDetector
-from text_detection_target import TextDetectionTargetWithResult
-from sc_logging import logger
-from frame_stabilizer import FrameStabilizer
-from ocr_training_data import ocr_training_data_options
+try:
+    from base_video_capture import BaseVideoCapture
+    from camera_info import CameraInfo
+    from ndi import NDICapture
+    from screen_capture_source import ScreenCapture, ScreenCaptureType
+    from storage import TextDetectionTargetMemoryStorage, subscribe_to_data, fetch_data
+    from tesseract import TextDetector
+    from text_detection_target import TextDetectionTargetWithResult
+    from sc_logging import logger
+    from frame_stabilizer import FrameStabilizer
+    from ocr_training_data import ocr_training_data_options
+except Exception as e:
+    try:
+        import pyi_splash  # type: ignore
 
+        pyi_splash.close()
+    except ImportError:
+        pass
+    print(f"Application failed to start: {e}")
+    raise e
 
 # Function to set the resolution
 def set_resolution(cap, width, height):
@@ -242,7 +251,7 @@ class TimerThread(QThread):
             self.retry_count = 0
 
         if not self.video_capture.isOpened():
-            logger.warn(
+            logger.warning(
                 "Error: unable to open camera. Check if the camera is connected."
             )
             self.update_error.emit("Error: Unable to play video stream")
@@ -275,11 +284,11 @@ class TimerThread(QThread):
 
         while not self.should_stop:
             if self.video_capture is None:
-                logger.warn("Error: video capture is None")
+                logger.warning("Error: video capture is None")
                 break
 
             if self.retry_count == self.retry_high_water_mark:
-                logger.warn("Error: retry high water mark exceeded")
+                logger.warning("Error: retry high water mark exceeded")
                 # reconnect the video cap
                 if self.video_capture is not None:
                     self.video_capture.release()
@@ -291,7 +300,7 @@ class TimerThread(QThread):
                 self.retry_count += 1
                 continue
             if self.retry_count > self.retry_count_max:
-                logger.warn("Error: retry count exceeded")
+                logger.warning("Error: retry count exceeded")
                 self.should_stop = True
                 self.update_error.emit("Error: Unable to play video stream")
                 break
@@ -324,7 +333,7 @@ class TimerThread(QThread):
                     self.video_capture.set(cv2.CAP_PROP_POS_FRAMES, 0)
                     self.sleep_fps_target()
                     continue
-                logger.warn(
+                logger.warning(
                     "Error: unable to read frame from camera, return value False (retry count: %d)",
                     self.retry_count,
                 )

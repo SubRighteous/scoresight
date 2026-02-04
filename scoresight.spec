@@ -13,7 +13,7 @@ parser.add_argument('--debug', action='store_true')
 args = parser.parse_args()
 
 datas = [
-    ('.env', '.'),
+    ('.venv', '.'),
     ('icons/circle-check.svg', './icons'),
     ('icons/circle-x.svg', './icons'),
     ('icons/template-field.svg', './icons'),
@@ -96,20 +96,20 @@ sources = [
 ]
 
 if args.win:
-    datas += [('src/win32DeviceEnum/win32DeviceEnumBind.cp311-win_amd64.pyd', './src/win32DeviceEnum')]
-    sources += ['src/win32DeviceEnum/enum_devices_dshow.py', 'src/screen_capture_source_windows.py']
+    sources += ['src/enum_devices_dshow.py', 'src/screen_capture_source_windows.py']
 if args.mac_osx:
     sources += ['src/screen_capture_source_mac.py']
 
 numpy_datas, numpy_binaries, numpy_hiddenimports = collect_all('numpy')
 ws_hiddenimports=['websockets', 'websockets.legacy']
+ndi_hiddenimports=['cyndilib.wrapper.common']
 
 a = Analysis(
     sources,
     pathex=[],
     binaries=numpy_binaries,
     datas=datas + numpy_datas,
-    hiddenimports=numpy_hiddenimports + ws_hiddenimports,
+    hiddenimports=numpy_hiddenimports + ws_hiddenimports + ndi_hiddenimports,
     hookspath=[],
     hooksconfig={},
     runtime_hooks=[],

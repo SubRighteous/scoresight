@@ -194,7 +194,10 @@ class OCRTrainingDataDialog(QDialog):
         logger.debug("Opening OCR training data save folder")
         folder = self.ui.lineEdit_saveFolder.text()
         if folder:
-            os.startfile(folder)
+            try:
+                os.startfile(folder)
+            except FileNotFoundError:
+                print(f"\"{folder}\" is not found..")
 
     def choose_save_folder(self):
         logger.debug("Choosing OCR training data save folder")
